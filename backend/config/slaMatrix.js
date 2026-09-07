@@ -41,7 +41,10 @@ const SLA_MATRIX = Object.freeze({
   urgent: Object.freeze({
     slaHours: 1,
     initialAuthority: 'maintenance',
-    escalationTarget: 'admin',
+    // All automatic SLA-breach escalations route to the Warden, regardless of
+    // priority. Admin retains its administrative role but is never an automatic
+    // escalation target.
+    escalationTarget: 'warden',
     escalationLevel: 1
   })
 });

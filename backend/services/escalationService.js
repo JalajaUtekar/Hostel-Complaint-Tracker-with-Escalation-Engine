@@ -33,7 +33,7 @@ function log(...args) {
 
 /**
  * The role a complaint escalates to when its SLA is breached, per the
- * centralized matrix (LOW/MEDIUM/HIGH -> warden, URGENT -> admin).
+ * centralized matrix (LOW/MEDIUM/HIGH/URGENT -> warden).
  * @param {string} priority
  * @returns {{ fromRole: string, toRole: string, fromLevel: number, toLevel: number }}
  */
@@ -41,7 +41,7 @@ function getEscalationTarget(priority) {
   const cfg = getSLAConfig(priority); // validates priority, throws on unknown
   return {
     fromRole: cfg.initialAuthority,      // 'maintenance'
-    toRole: cfg.escalationTarget,        // 'warden' | 'admin'
+    toRole: cfg.escalationTarget,        // 'warden'
     fromLevel: BASE_LEVEL,               // 0
     toLevel: cfg.escalationLevel         // 1
   };
@@ -82,7 +82,7 @@ function shouldEscalate(complaint, now = new Date()) {
  * Deterministically pick the active user that a complaint of this priority
  * should escalate to. Oldest matching account wins (stable across runs).
  * Uses the existing User.isActive flag — no new status field is introduced.
- * @param {string} toRole - 'warden' | 'admin'
+ * @param {string} toRole - 'warden'
  * @returns {Promise<object|null>} User doc or null when none is available
  */
 async function findTargetAuthority(toRole) {

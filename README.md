@@ -81,7 +81,7 @@ They are never hard-coded elsewhere.
 | LOW | 48 hours | Warden |
 | MEDIUM | 24 hours | Warden |
 | HIGH | 6 hours | Warden |
-| URGENT | 1 hour | Admin |
+| URGENT | 1 hour | Warden |
 
 **SLA deadlines are calculated server-side when a complaint is created.** The
 backend uses its own creation timestamp (`complaint.createdAt`) plus the matrix
@@ -130,8 +130,7 @@ Complaint resolution is tracked separately
 
 | Priority | Escalation authority |
 |----------|---------------------|
-| LOW / MEDIUM / HIGH | **Warden** |
-| URGENT | **Admin** |
+| LOW / MEDIUM / HIGH / URGENT | **Warden** |
 
 The engine selects a concrete active user for the target role (oldest matching
 account, deterministic across runs). If no active user exists for that role, the

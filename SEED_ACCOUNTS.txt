@@ -1,0 +1,26 @@
+ResolveX — MMCOE Hostel Grievance Portal
+Seed / Demo Login Accounts
+(created by backend/config/seed.js — run: cd backend && npm run seed)
+
+WARNING: demo credentials only. Do not use in production.
+
+=====================================================================
+ROLE          NAME            EMAIL                  PASSWORD
+=====================================================================
+Admin         Admin           admin@hostel.com       admin123
+Warden        Priya Nair      warden@hostel.com      warden123
+Maintenance   Ravi Kumar      ravi@hostel.com        staff123
+Maintenance   Suresh Babu     suresh@hostel.com      staff123
+Student       Arjun Reddy     arjun@student.com      student123
+Student       Priya Sharma    priya@student.com      student123
+Student       Mohammed Ali    ali@student.com        student123
+=====================================================================
+
+Notes:
+- Admin  -> Admin dashboard      (/admin)
+- Warden -> Warden dashboard     (/warden)  : escalated + resolved complaints
+- Maintenance -> My Tasks        (/maintenance)
+- Student -> Student dashboard   (/student)
+
+All automatic SLA-breach escalations (LOW/MEDIUM/HIGH/URGENT) route to the Warden.
+SLA windows: LOW 48h | MEDIUM 24h | HIGH 6h | URGENT 1h

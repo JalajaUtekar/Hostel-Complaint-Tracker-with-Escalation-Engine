@@ -112,18 +112,19 @@ async function escalationsFor(complaintId) {
     check('T1 Escalation escalatedAt is a Date', e1[0] && e1[0].escalatedAt instanceof Date);
 
     // ---------------------------------------------------------------
-    // TEST 2 — URGENT overdue -> target role admin
+    // TEST 2 — URGENT overdue -> target role warden (ALL priorities -> warden)
     // ---------------------------------------------------------------
     const c2 = await makeComplaint({ tag: 'T2-urgent-overdue', priority: 'urgent', slaOffsetH: -1 });
     createdComplaintIds.push(c2._id);
     const r2 = await escalateComplaint(c2._id, { resolveAuthority: resolver });
     check('T2 escalated', r2.status === 'escalated', r2.reason);
-    check('T2 toRole === admin', r2.toRole === 'admin');
+    check('T2 toRole === warden', r2.toRole === 'warden');
     const c2b = await Complaint.findById(c2._id);
-    check('T2 currentAuthorityRole === admin', c2b.currentAuthorityRole === 'admin');
-    check('T2 currentAuthority === temp admin id', String(c2b.currentAuthority) === String(admin._id));
+    check('T2 currentAuthorityRole === warden', c2b.currentAuthorityRole === 'warden');
+    check('T2 currentAuthority === temp warden id', String(c2b.currentAuthority) === String(warden._id));
+    check('T2 currentAuthority is NOT the admin', String(c2b.currentAuthority) !== String(admin._id));
     const e2 = await escalationsFor(c2._id);
-    check('T2 one Escalation, toRole admin', e2.length === 1 && e2[0].toRole === 'admin');
+    check('T2 one Escalation, toRole warden', e2.length === 1 && e2[0].toRole === 'warden');
 
     // ---------------------------------------------------------------
     // TEST 3 — future SLA deadline -> does NOT escalate
@@ -207,7 +208,9 @@ async function escalationsFor(complaintId) {
     // Pure helpers
     // ---------------------------------------------------------------
     check('getEscalationTarget(high) -> warden L0->L1', (() => { const t = getEscalationTarget('high'); return t.toRole === 'warden' && t.fromRole === 'maintenance' && t.fromLevel === 0 && t.toLevel === 1; })());
-    check('getEscalationTarget(urgent) -> admin', getEscalationTarget('urgent').toRole === 'admin');
+    check('getEscalationTarget(urgent) -> warden', getEscalationTarget('urgent').toRole === 'warden');
+    check('getEscalationTarget(low) -> warden', getEscalationTarget('low').toRole === 'warden');
+    check('getEscalationTarget(medium) -> warden', getEscalationTarget('medium').toRole === 'warden');
     check('shouldEscalate: terminal status blocked', shouldEscalate({ status: 'closed', slaDeadline: new Date(Date.now() - H(1)) }).eligible === false);
     check('shouldEscalate: breached open eligible', shouldEscalate({ status: 'open', slaDeadline: new Date(Date.now() - H(1)), isEscalated: false, escalationLevel: 0 }).eligible === true);
 

@@ -93,7 +93,8 @@ export default function RegisterPage() {
                 <select className="input" {...f('role')}>
                   <option value="student">Student</option>
                   <option value="maintenance">Maintenance Staff</option>
-                  <option value="admin">Admin / Warden</option>
+                  <option value="warden">Warden</option>
+                  <option value="admin">Admin</option>
                 </select>
               </div>
 

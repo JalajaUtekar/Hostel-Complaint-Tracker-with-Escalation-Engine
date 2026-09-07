@@ -12,8 +12,8 @@ const LOGO_SRC = '/logo.png';
 const DEMO_ACCOUNTS = [
   { label: 'Student', email: 'arjun@student.com', password: 'student123' },
   { label: 'Staff', email: 'ravi@hostel.com', password: 'staff123' },
-  { label: 'Warden', email: 'warden@hostel.com', password: 'warden123' },
   { label: 'Admin', email: 'admin@hostel.com', password: 'admin123' },
+  { label: 'Warden', email: 'warden@hostel.com', password: 'warden123' },
 ];
 
 export default function LoginPage() {

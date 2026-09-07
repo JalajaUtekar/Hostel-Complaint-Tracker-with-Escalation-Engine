@@ -67,7 +67,46 @@ async function loadWardenComplaints(wardenId, extraQuery = {}) {
   });
 }
 
-// @desc    List complaints escalated to the logged-in warden (+ KPIs)
+// Load resolved/closed complaints for the Warden's oversight view. These are
+// shown regardless of whether they were ever escalated — but complaints already
+// present in the escalated list are excluded here so the UI never shows a
+// complaint twice (dedupe by _id).
+async function loadResolvedComplaints(excludeIds = []) {
+  const complaints = await Complaint.find({
+    status: { $in: TERMINAL_STATUSES },
+    _id: { $nin: excludeIds },
+  })
+    .populate('assignedTo', 'name email role')
+    .populate('currentAuthority', 'name email role')
+    .populate('studentId', 'name email')
+    .sort({ resolvedAt: -1, updatedAt: -1 })
+    .lean();
+
+  const ids = complaints.map((c) => c._id);
+  const escalations = ids.length
+    ? await Escalation.find({ complaintId: { $in: ids } }).sort({ escalatedAt: 1 }).lean()
+    : [];
+  const byComplaint = {};
+  escalations.forEach((e) => {
+    const k = String(e.complaintId);
+    (byComplaint[k] = byComplaint[k] || []).push(e);
+  });
+
+  const now = Date.now();
+  return complaints.map((c) => {
+    const list = byComplaint[String(c._id)] || [];
+    return {
+      ...c,
+      escalations: list,
+      escalationStatus: escalationStatusOf(list),
+      slaState: slaStateOf(c, now),
+      isUnresolved: false,
+    };
+  });
+}
+
+// @desc    List complaints escalated to the logged-in warden + resolved
+//          complaints (oversight) + KPIs
 // @route   GET /api/warden/escalations
 // @access  Private (warden)
 const getEscalations = async (req, res, next) => {
@@ -83,6 +122,13 @@ const getEscalations = async (req, res, next) => {
     if (sla === 'breached' || sla === 'within' || sla === 'resolved') {
       items = items.filter((i) => i.slaState === sla);
     }
+
+    // Resolved-complaints section — deduped against the FULL escalated set for
+    // this warden (not the filtered `items`), so filtering the escalated list
+    // never makes a complaint reappear in the resolved section.
+    const escalatedIds = (await Complaint.find({ currentAuthority: wardenId, isEscalated: true })
+      .select('_id').lean()).map((c) => c._id);
+    const resolved = await loadResolvedComplaints(escalatedIds);
 
     // --- KPIs: always computed over the warden's FULL escalated workload,
     //     independent of the active filters, straight from MongoDB. ---
@@ -115,9 +161,10 @@ const getEscalations = async (req, res, next) => {
       avgHoursSinceEscalation: sinceEscalation.length
         ? round1(sinceEscalation.reduce((a, b) => a + b, 0) / sinceEscalation.length)
         : 0,
+      resolvedComplaints: resolved.length,
     };
 
-    res.json({ success: true, data: items, kpis });
+    res.json({ success: true, data: items, resolved, kpis });
   } catch (error) {
     next(error);
   }

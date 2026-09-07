@@ -28,7 +28,7 @@ check('HIGH is not the retired 4-hour value', getSLAConfig('high').slaHours !== 
 
 // --- escalation targets (config only; no logic this step) ---
 check('LOW    escalationTarget', getSLAConfig('low').escalationTarget, 'warden');
-check('URGENT escalationTarget', getSLAConfig('urgent').escalationTarget, 'admin');
+check('URGENT escalationTarget', getSLAConfig('urgent').escalationTarget, 'warden');
 
 // --- calculateDeadline: HIGH + start => start + 6h exactly ---
 const start = new Date('2026-09-07T10:00:00.000Z');

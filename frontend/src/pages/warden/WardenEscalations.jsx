@@ -40,6 +40,7 @@ function FilterPills({ label, options, value, onChange, renderLabel }) {
 export default function WardenEscalations({ embedded = false, onKpis }) {
   const { user } = useAuth();
   const [items, setItems] = useState([]);
+  const [resolved, setResolved] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filters, setFilters] = useState({ priority: '', status: '', sla: '' });
@@ -54,6 +55,7 @@ export default function WardenEscalations({ embedded = false, onKpis }) {
       if (filters.sla) params.sla = filters.sla;
       const { data } = await wardenAPI.getEscalations(params);
       setItems(data.data || []);
+      setResolved(data.resolved || []);
       if (onKpis && data.kpis) onKpis(data.kpis);
     } catch (err) {
       if (err.response?.status === 403) setError('You are not authorized to view escalations.');
@@ -70,7 +72,7 @@ export default function WardenEscalations({ embedded = false, onKpis }) {
   }, [load]);
 
   return (
-    <div className={embedded ? '' : 'space-y-6 animate-slide-up'}>
+    <div className={embedded ? 'space-y-6' : 'space-y-6 animate-slide-up'}>
       {!embedded && (
         <div>
           <h1 className="page-header flex items-center gap-2.5">
@@ -201,6 +203,60 @@ export default function WardenEscalations({ embedded = false, onKpis }) {
             </div>
           </>
         )}
+      </div>
+
+      {/* Resolved complaints — oversight view. Separate section so an
+          escalated+resolved complaint is never shown twice (the backend
+          already excludes escalated complaints from this list). */}
+      <div>
+        <h2 className="font-display font-semibold text-ink mb-3">Resolved Complaints</h2>
+        <div className="card overflow-hidden">
+          {loading ? (
+            <LoadingState message="Loading resolved complaints..." />
+          ) : resolved.length === 0 ? (
+            <EmptyState
+              icon={InboxIcon}
+              title="No resolved complaints"
+              description="Complaints appear here once their status becomes resolved or closed."
+            />
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-ink-muted border-b border-surface-border">
+                    <th className="px-4 py-3 font-medium">Complaint</th>
+                    <th className="px-4 py-3 font-medium">Priority</th>
+                    <th className="px-4 py-3 font-medium">Assigned Staff</th>
+                    <th className="px-4 py-3 font-medium">Status</th>
+                    <th className="px-4 py-3 font-medium">Escalation</th>
+                    <th className="px-4 py-3 font-medium">Resolved</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-surface-border">
+                  {resolved.map((c) => (
+                    <tr key={c._id} className="hover:bg-surface-hover transition-colors">
+                      <td className="px-4 py-3">
+                        <span className="font-medium text-ink">{c.title}</span>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-xs text-ink-muted font-mono">{shortRef(c._id)}</span>
+                          <CategoryBadge category={c.category} />
+                        </div>
+                      </td>
+                      <td className="px-4 py-3"><PriorityBadge priority={c.priority} /></td>
+                      <td className="px-4 py-3 text-ink-soft">
+                        {c.assignedTo?.name || <span className="text-ink-muted">Unassigned</span>}
+                        {c.assignedTo?.name && <span className="text-ink-muted"> · Maintenance</span>}
+                      </td>
+                      <td className="px-4 py-3"><StatusBadge status={c.status} /></td>
+                      <td className="px-4 py-3"><EscalationStatusBadge status={c.escalationStatus} /></td>
+                      <td className="px-4 py-3 text-ink-muted text-xs">{fmtDateTime(c.resolvedAt)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

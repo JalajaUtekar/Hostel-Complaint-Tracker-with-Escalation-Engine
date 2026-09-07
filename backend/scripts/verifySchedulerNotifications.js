@@ -90,16 +90,20 @@ const notifFor = (id) => Notification.find({ relatedId: id, type: 'complaint_esc
     check('T1 notification isRead === false', n1[0] && n1[0].isRead === false);
 
     // ---------------------------------------------------------------
-    // TEST 2 — URGENT escalates to admin, admin gets the notification
+    // TEST 2 — URGENT escalates to the WARDEN, warden gets the notification
+    //          (ALL priorities escalate to warden; admin is never auto-targeted)
     // ---------------------------------------------------------------
     const c2 = await makeComplaint({ tag: 'T2-urgent', priority: 'urgent', slaOffsetH: -1 });
     await escalationScheduler.runTick(scoped());
     const c2b = await Complaint.findById(c2._id);
-    check('T2 currentAuthorityRole === admin', c2b.currentAuthorityRole === 'admin');
+    check('T2 currentAuthorityRole === warden', c2b.currentAuthorityRole === 'warden');
+    check('T2 currentAuthority === temp warden', String(c2b.currentAuthority) === String(warden._id));
+    check('T2 currentAuthority is NOT the admin', String(c2b.currentAuthority) !== String(admin._id));
     check('T2 one Escalation record', (await escFor(c2._id)).length === 1);
     const n2 = await notifFor(c2._id);
     check('T2 one complaint_escalated notification', n2.length === 1);
-    check('T2 recipient === selected Admin', n2[0] && String(n2[0].userId) === String(admin._id));
+    check('T2 recipient === selected Warden', n2[0] && String(n2[0].userId) === String(warden._id));
+    check('T2 recipient is NOT the admin', n2[0] && String(n2[0].userId) !== String(admin._id));
 
     // ---------------------------------------------------------------
     // TEST 3 — future SLA: no escalation, no notification
