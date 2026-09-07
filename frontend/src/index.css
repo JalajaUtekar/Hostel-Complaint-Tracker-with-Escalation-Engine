@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-surface text-ink font-sans antialiased;
+  }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #d9cfca transparent;
+  }
+  *::-webkit-scrollbar { width: 6px; height: 6px; }
+  *::-webkit-scrollbar-track { background: transparent; }
+  *::-webkit-scrollbar-thumb { background: #d9cfca; border-radius: 9999px; }
+  *::-webkit-scrollbar-thumb:hover { background: #c4b7b1; }
+}
+
+@layer components {
+  .card {
+    @apply bg-surface-card border border-surface-border rounded-2xl shadow-sm;
+  }
+  .btn-primary {
+    @apply bg-brand-600 hover:bg-brand-700 text-white font-medium px-4 py-2.5 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 justify-center shadow-sm;
+  }
+  .btn-secondary {
+    @apply bg-surface-card border border-surface-border text-ink-soft hover:text-ink hover:border-brand-600 hover:bg-surface-hover font-medium px-4 py-2.5 rounded-xl transition-all duration-200 flex items-center gap-2 justify-center;
+  }
+  .btn-danger {
+    @apply bg-escalation-600 hover:bg-escalation-700 text-white font-medium px-4 py-2.5 rounded-xl transition-all duration-200 flex items-center gap-2 justify-center shadow-sm;
+  }
+  .input {
+    @apply w-full bg-surface-card border border-surface-border text-ink placeholder-ink-muted rounded-xl px-4 py-3 focus:outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-600/20 transition-all duration-200;
+  }
+  .label {
+    @apply block text-sm font-medium text-ink-soft mb-1.5;
+  }
+  .badge {
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+  .page-header {
+    @apply font-display text-2xl font-bold text-brand-900;
+  }
+  .sidebar-link {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-xl text-ink-soft hover:text-ink hover:bg-surface-hover transition-all duration-200 font-medium text-sm;
+  }
+  .sidebar-link.active {
+    @apply bg-brand-50 text-brand-700 border border-brand-100;
+  }
+  /* Escalation / SLA-breach emphasis — prominent but professional */
+  .escalation-banner {
+    @apply flex items-center gap-2 px-3 py-2 rounded-xl bg-escalation-50 border border-escalation-200 text-escalation-700 text-sm font-medium;
+  }
+}
